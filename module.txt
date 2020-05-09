@@ -1,10 +1,13 @@
 {
     "id" : "Furnishings",
-    "version" : "0.1.0",
+    "version" : "1.0.0",
     "author" : "The Terasology Foundation",
     "displayName" : "Furnishings",
     "description" : "A library module providing logic for furnishings, like doors or chests.",
-    "dependencies" : [],
+    "dependencies" : [
+        { "id": "Drops", "minVersion": "1.0.0" },
+        { "id": "Inventory", "minVersion": "1.1.0" }
+    ],
     "serverSideOnly" : false,
     "isLibrary": true
 }
