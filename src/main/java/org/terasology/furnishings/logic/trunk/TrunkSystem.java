@@ -30,6 +30,7 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.Region3i;
 import org.terasology.math.Side;
 import org.terasology.math.geom.Vector3f;
@@ -121,12 +122,14 @@ public class TrunkSystem extends BaseComponentSystem {
         Block newBottomBlock;
         Block newTopBlock;
 
+        org.joml.Vector3f viewingDirection = JomlUtil.from(event.getDirection());
+
         if (facingDir == Side.FRONT || facingDir == Side.RIGHT) {
-            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, facingDir.reverse());
-            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, facingDir.reverse());
+            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, viewingDirection);
+            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, viewingDirection);
         } else {
-            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, facingDir.reverse());
-            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, facingDir.reverse());
+            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, viewingDirection);
+            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, viewingDirection);
         }
         Map<Vector3i, Block> blockMap = new HashMap<>();
         blockMap.put(leftBlockPos, newBottomBlock);

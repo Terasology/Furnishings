@@ -30,6 +30,7 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.Region3i;
 import org.terasology.math.Side;
 import org.terasology.math.geom.Vector3f;
@@ -118,8 +119,9 @@ public class DoorSystem extends BaseComponentSystem {
             closedSide = attachSide.yawClockwise(1);
         }
 
-        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
-        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
+        org.joml.Vector3f viewingDirection = JomlUtil.from(event.getDirection());
+        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, viewingDirection);
+        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, viewingDirection);
 
         Map<Vector3i, Block> blockMap = new HashMap<>();
         blockMap.put(bottomBlockPos, newBottomBlock);
@@ -191,9 +193,10 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.closedSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
+        org.joml.Vector3f forward = new org.joml.Vector3f(0, 0, 1);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, forward);
         worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, forward);
         worldProvider.setBlock(regionComp.region.max(), topBlock);
         if (door.closeSound != null) {
             entity.send(new PlaySoundEvent(door.closeSound, 1f));
@@ -208,9 +211,10 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.openSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
+        org.joml.Vector3f forward = new org.joml.Vector3f(0, 0, 1);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, forward);
         worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, forward);
         worldProvider.setBlock(regionComp.region.max(), topBlock);
         if (door.openSound != null) {
             entity.send(new PlaySoundEvent(door.openSound, 1f));
