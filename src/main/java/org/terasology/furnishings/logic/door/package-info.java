@@ -16,4 +16,4 @@
 
 @API package org.terasology.furnishings.logic.door;
 
-import org.terasology.module.sandbox.API;
+import org.terasology.gestalt.module.sandbox.API;
