@@ -31,7 +31,6 @@ import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.JomlUtil;
-import org.terasology.math.Region3i;
 import org.terasology.math.Side;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
@@ -42,7 +41,9 @@ import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
+import org.terasology.world.block.BlockRegion;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
+import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.regions.BlockRegionComponent;
 
 import java.util.HashMap;
@@ -131,7 +132,7 @@ public class DoorSystem extends BaseComponentSystem {
         if (!blockEvent.isConsumed()) {
             EntityRef newDoor = entityManager.create(door.doorRegionPrefab);
             entity.removeComponent(MeshComponent.class);
-            newDoor.addComponent(new BlockRegionComponent(Region3i.createBounded(bottomBlockPos, topBlockPos)));
+            newDoor.addComponent(new BlockRegionComponent(new BlockRegion().union(JomlUtil.from(bottomBlockPos)).union(JomlUtil.from(topBlockPos))));
             Vector3f doorCenter = bottomBlockPos.toVector3f();
             doorCenter.y += 0.5f;
             newDoor.addComponent(new LocationComponent(doorCenter));
@@ -192,10 +193,10 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.closedSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
-        worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
-        worldProvider.setBlock(regionComp.region.max(), topBlock);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMin(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
+        worldProvider.setBlock(regionComp.region.getMin(new org.joml.Vector3i()), bottomBlock);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMax(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
+        worldProvider.setBlock(regionComp.region.getMax(new org.joml.Vector3i()), topBlock);
         if (door.closeSound != null) {
             entity.send(new PlaySoundEvent(door.closeSound, 1f));
         }
@@ -209,10 +210,10 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.openSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
-        worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
-        worldProvider.setBlock(regionComp.region.max(), topBlock);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMin(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
+        worldProvider.setBlock(regionComp.region.getMin(new org.joml.Vector3i()), bottomBlock);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMax(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
+        worldProvider.setBlock(regionComp.region.getMax(new org.joml.Vector3i()), topBlock);
         if (door.openSound != null) {
             entity.send(new PlaySoundEvent(door.openSound, 1f));
         }
