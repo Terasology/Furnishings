@@ -42,6 +42,7 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockRegion;
+import org.terasology.world.block.BlockRegions;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.regions.BlockRegionComponent;
@@ -52,6 +53,11 @@ import java.util.Map;
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class DoorSystem extends BaseComponentSystem {
     private static final Logger logger = LoggerFactory.getLogger(DoorSystem.class);
+
+    /**
+     * Static "viewing direction" for placing door blocks.
+     */
+    private static final org.joml.Vector3fc TOP = new org.joml.Vector3f(Side.TOP.direction());
 
     @In
     private WorldProvider worldProvider;
@@ -132,7 +138,9 @@ public class DoorSystem extends BaseComponentSystem {
         if (!blockEvent.isConsumed()) {
             EntityRef newDoor = entityManager.create(door.doorRegionPrefab);
             entity.removeComponent(MeshComponent.class);
-            newDoor.addComponent(new BlockRegionComponent(new BlockRegion().union(JomlUtil.from(bottomBlockPos)).union(JomlUtil.from(topBlockPos))));
+
+            newDoor.addComponent(new BlockRegionComponent(
+                    BlockRegions.encompassing(JomlUtil.from(bottomBlockPos), JomlUtil.from(topBlockPos))));
             Vector3f doorCenter = bottomBlockPos.toVector3f();
             doorCenter.y += 0.5f;
             newDoor.addComponent(new LocationComponent(doorCenter));
@@ -191,12 +199,10 @@ public class DoorSystem extends BaseComponentSystem {
     public void closeDoor(CloseDoorEvent event, EntityRef player) {
         EntityRef entity = event.getDoorEntity();
         DoorComponent door = entity.getComponent(DoorComponent.class);
-        Side newSide = door.closedSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMin(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
-        worldProvider.setBlock(regionComp.region.getMin(new org.joml.Vector3i()), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMax(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
-        worldProvider.setBlock(regionComp.region.getMax(new org.joml.Vector3i()), topBlock);
+
+        setDoorBlocks(door, regionComp.region, door.closedSide);
+
         if (door.closeSound != null) {
             entity.send(new PlaySoundEvent(door.closeSound, 1f));
         }
@@ -208,15 +214,33 @@ public class DoorSystem extends BaseComponentSystem {
     public void openDoor(OpenDoorEvent event, EntityRef player) {
         EntityRef entity = event.getDoorEntity();
         DoorComponent door = entity.getComponent(DoorComponent.class);
-        Side newSide = door.openSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMin(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
-        worldProvider.setBlock(regionComp.region.getMin(new org.joml.Vector3i()), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(regionComp.region.getMax(new org.joml.Vector3i()), newSide, new org.joml.Vector3f(Side.TOP.direction())));
-        worldProvider.setBlock(regionComp.region.getMax(new org.joml.Vector3i()), topBlock);
+
+        setDoorBlocks(door, regionComp.region, door.openSide);
+
         if (door.openSound != null) {
             entity.send(new PlaySoundEvent(door.openSound, 1f));
         }
         door.isOpen = true;
+        entity.saveComponent(door);
+    }
+
+    /**
+     * Set both blocks that make up the door based on the door's state determined by {@code side}.
+     * <p>
+     * The blocks are placed as if the player was targeting the {@link Side#TOP} of the block beneath.
+     *
+     * @param door the door component with information about bottom and top blocks
+     * @param region the block region the door covers (assumed to by of size 1x2x1)
+     * @param side the state of the door, i.e., whether it is open or closed
+     */
+    private void setDoorBlocks(DoorComponent door, BlockRegion region, Side side) {
+        org.joml.Vector3i blockPos = region.getMin(new org.joml.Vector3i());
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(blockPos, side, TOP));
+        worldProvider.setBlock(blockPos, bottomBlock);
+
+        region.getMax(blockPos);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(blockPos, side, TOP));
+        worldProvider.setBlock(blockPos, topBlock);
     }
 }
