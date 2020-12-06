@@ -16,6 +16,10 @@
 
 package org.terasology.furnishings.logic.door;
 
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector3i;
+import org.joml.Vector3ic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.audio.AudioManager;
@@ -32,8 +36,6 @@ import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.JomlUtil;
 import org.terasology.math.Side;
-import org.terasology.math.geom.Vector3f;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.utilities.Assets;
@@ -57,7 +59,7 @@ public class DoorSystem extends BaseComponentSystem {
     /**
      * Static "viewing direction" for placing door blocks.
      */
-    private static final org.joml.Vector3fc TOP = new org.joml.Vector3f(Side.TOP.direction());
+    private static final Vector3fc TOP = new Vector3f(Side.TOP.direction());
 
     @In
     private WorldProvider worldProvider;
@@ -79,37 +81,42 @@ public class DoorSystem extends BaseComponentSystem {
             return;
         }
 
-        Vector3f horizDir = new Vector3f(JomlUtil.from(event.getDirection()));
-        horizDir.y = 0;
+        Vector3f horizDir =
+                new Vector3f(event.getDirection())
+                        .setComponent(1, 0); // set y dimension to 0
         Side facingDir = Side.inDirection(horizDir);
         if (!facingDir.isHorizontal()) {
             event.consume();
             return;
         }
 
-        Vector3f offset = new Vector3f(JomlUtil.from(event.getHitPosition()));
-        offset.sub(targetBlockComp.position.toVector3f());
+        Vector3f offset =
+                new Vector3f(event.getHitPosition())
+                        .sub(targetBlockComp.position.x, targetBlockComp.position.y, targetBlockComp.position.z);
         Side offsetDir = Side.inDirection(offset);
 
-        Vector3i primePos = new Vector3i(targetBlockComp.position);
-        primePos.add(offsetDir.getVector3i());
+        Vector3i primePos =
+                JomlUtil.from(targetBlockComp.position)
+                        .add(offsetDir.direction());
+
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
             event.consume();
             return;
         }
+
         Block belowBlock = worldProvider.getBlock(primePos.x, primePos.y - 1, primePos.z);
         Block aboveBlock = worldProvider.getBlock(primePos.x, primePos.y + 1, primePos.z);
 
         // Determine top and bottom blocks
-        Vector3i bottomBlockPos;
-        Vector3i topBlockPos;
+        Vector3i bottomBlockPos = new Vector3i();
+        Vector3i topBlockPos = new Vector3i();
         if (belowBlock.isReplacementAllowed()) {
-            bottomBlockPos = new Vector3i(primePos.x, primePos.y - 1, primePos.z);
-            topBlockPos = primePos;
+            bottomBlockPos.set(primePos.x, primePos.y - 1, primePos.z);
+            topBlockPos.set(primePos);
         } else if (aboveBlock.isReplacementAllowed()) {
-            bottomBlockPos = primePos;
-            topBlockPos = new Vector3i(primePos.x, primePos.y + 1, primePos.z);
+            bottomBlockPos.set(primePos);
+            topBlockPos.set(primePos.x, primePos.y + 1, primePos.z);
         } else {
             event.consume();
             return;
@@ -126,12 +133,14 @@ public class DoorSystem extends BaseComponentSystem {
             closedSide = attachSide.yawClockwise(1);
         }
 
-        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
-        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
+        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(bottomBlockPos,
+                closedSide, TOP));
+        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(bottomBlockPos,
+                closedSide, TOP));
 
-        Map<Vector3i, Block> blockMap = new HashMap<>();
-        blockMap.put(bottomBlockPos, newBottomBlock);
-        blockMap.put(topBlockPos, newTopBlock);
+        Map<org.terasology.math.geom.Vector3i, Block> blockMap = new HashMap<>();
+        blockMap.put(JomlUtil.from(bottomBlockPos), newBottomBlock);
+        blockMap.put(JomlUtil.from(topBlockPos), newTopBlock);
         PlaceBlocks blockEvent = new PlaceBlocks(blockMap, event.getInstigator());
         worldProvider.getWorldEntity().send(blockEvent);
 
@@ -139,11 +148,11 @@ public class DoorSystem extends BaseComponentSystem {
             EntityRef newDoor = entityManager.create(door.doorRegionPrefab);
             entity.removeComponent(MeshComponent.class);
 
-            newDoor.addComponent(new BlockRegionComponent(
-                    BlockRegions.encompassing(JomlUtil.from(bottomBlockPos), JomlUtil.from(topBlockPos))));
-            Vector3f doorCenter = bottomBlockPos.toVector3f();
-            doorCenter.y += 0.5f;
-            newDoor.addComponent(new LocationComponent(doorCenter));
+            newDoor.addComponent(new BlockRegionComponent(BlockRegions.encompassing(bottomBlockPos, topBlockPos)));
+
+            Vector3fc doorCenter = new Vector3f(bottomBlockPos).add(0, 0.5f, 0);
+            newDoor.addComponent(new LocationComponent(JomlUtil.from(doorCenter)));
+
             DoorComponent newDoorComp = newDoor.getComponent(DoorComponent.class);
             newDoorComp.closedSide = closedSide;
             newDoorComp.openSide = attachSide.reverse();
@@ -178,9 +187,9 @@ public class DoorSystem extends BaseComponentSystem {
         return attachSide;
     }
 
-    private boolean canAttachTo(Vector3i doorPos, Side side) {
-        Vector3i adjacentBlockPos = new Vector3i(doorPos);
-        adjacentBlockPos.add(side.getVector3i());
+    private boolean canAttachTo(Vector3ic doorPos, Side side) {
+        Vector3i adjacentBlockPos =
+                new Vector3i(doorPos).add(side.direction());
         Block adjacentBlock = worldProvider.getBlock(adjacentBlockPos);
         return adjacentBlock.isAttachmentAllowed();
     }
@@ -235,7 +244,7 @@ public class DoorSystem extends BaseComponentSystem {
      * @param side the state of the door, i.e., whether it is open or closed
      */
     private void setDoorBlocks(DoorComponent door, BlockRegion region, Side side) {
-        org.joml.Vector3i blockPos = region.getMin(new org.joml.Vector3i());
+        Vector3i blockPos = region.getMin(new Vector3i());
         Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(blockPos, side, TOP));
         worldProvider.setBlock(blockPos, bottomBlock);
 

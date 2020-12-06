@@ -16,6 +16,8 @@
 
 package org.terasology.furnishings.logic.trunk;
 
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.audio.AudioManager;
@@ -31,10 +33,7 @@ import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.JomlUtil;
-import org.terasology.math.Region3i;
 import org.terasology.math.Side;
-import org.terasology.math.geom.Vector3f;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.utilities.Assets;
@@ -42,7 +41,7 @@ import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
-import org.terasology.world.block.BlockRegion;
+import org.terasology.world.block.BlockRegions;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.block.regions.BlockRegionComponent;
 
@@ -67,26 +66,31 @@ public class TrunkSystem extends BaseComponentSystem {
     @ReceiveEvent(components = {TrunkComponent.class, ItemComponent.class})
     public void placeTrunk(ActivateEvent event, EntityRef entity) {
         TrunkComponent trunk = entity.getComponent(TrunkComponent.class);
+
         BlockComponent targetBlockComp = event.getTarget().getComponent(BlockComponent.class);
         if (targetBlockComp == null) {
             event.consume();
             return;
         }
 
-        Vector3f horizDir = new Vector3f(JomlUtil.from(event.getDirection()));
-        horizDir.y = 0;
+        Vector3f horizDir =
+                new Vector3f(event.getDirection())
+                        .setComponent(1, 0); // set y dimension to 0
         Side facingDir = Side.inDirection(horizDir);
         if (!facingDir.isHorizontal()) {
             event.consume();
             return;
         }
 
-        Vector3f offset = new Vector3f(JomlUtil.from(event.getHitPosition()));
-        offset.sub(targetBlockComp.position.toVector3f());
+        Vector3f offset =
+                new Vector3f(event.getHitPosition())
+                        .sub(targetBlockComp.position.x, targetBlockComp.position.y, targetBlockComp.position.z);
         Side offsetDir = Side.inDirection(offset);
 
-        Vector3i primePos = new Vector3i(targetBlockComp.position);
-        primePos.add(offsetDir.getVector3i());
+        Vector3i primePos =
+                JomlUtil.from(targetBlockComp.position)
+                        .add(offsetDir.direction());
+
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
             event.consume();
@@ -107,14 +111,14 @@ public class TrunkSystem extends BaseComponentSystem {
         }
 
         // Determine top and bottom blocks
-        Vector3i leftBlockPos;
-        Vector3i rightBlockPos;
+        Vector3i leftBlockPos = new Vector3i();
+        Vector3i rightBlockPos = new Vector3i();
         if (leftBlock.isReplacementAllowed()) {
-            leftBlockPos = new Vector3i(isX ? primePos.x - 1 : primePos.x, primePos.y, isX ? primePos.z : primePos.z - 1);
-            rightBlockPos = primePos;
+            leftBlockPos.set(isX ? primePos.x - 1 : primePos.x, primePos.y, isX ? primePos.z : primePos.z - 1);
+            rightBlockPos.set(primePos);
         } else if (rightBlock.isReplacementAllowed()) {
-            leftBlockPos = primePos;
-            rightBlockPos = new Vector3i(isX ? primePos.x + 1 : primePos.x, primePos.y, isX ? primePos.z : primePos.z + 1);
+            leftBlockPos.set(primePos);
+            rightBlockPos.set(isX ? primePos.x + 1 : primePos.x, primePos.y, isX ? primePos.z : primePos.z + 1);
         } else {
             event.consume();
             return;
@@ -124,25 +128,31 @@ public class TrunkSystem extends BaseComponentSystem {
         Block newTopBlock;
 
         if (facingDir == Side.FRONT || facingDir == Side.RIGHT) {
-            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, facingDir.reverse());
-            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, facingDir.reverse());
+            //TODO: can this be replace by `new BlockPlacementData(leftBlockPos, Side.BOTTOM, facingDir.reverse()
+            // .direction())`
+            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(JomlUtil.from(leftBlockPos), Side.BOTTOM,
+                    facingDir.reverse());
+            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(JomlUtil.from(rightBlockPos), Side.BOTTOM,
+                    facingDir.reverse());
         } else {
-            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(leftBlockPos, Side.BOTTOM, facingDir.reverse());
-            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(rightBlockPos, Side.BOTTOM, facingDir.reverse());
+            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(JomlUtil.from(leftBlockPos), Side.BOTTOM,
+                    facingDir.reverse());
+            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(JomlUtil.from(rightBlockPos), Side.BOTTOM,
+                    facingDir.reverse());
         }
-        Map<Vector3i, Block> blockMap = new HashMap<>();
-        blockMap.put(leftBlockPos, newBottomBlock);
-        blockMap.put(rightBlockPos, newTopBlock);
+        Map<org.terasology.math.geom.Vector3i, Block> blockMap = new HashMap<>();
+        blockMap.put(JomlUtil.from(leftBlockPos), newBottomBlock);
+        blockMap.put(JomlUtil.from(rightBlockPos), newTopBlock);
         PlaceBlocks blockEvent = new PlaceBlocks(blockMap, event.getInstigator());
         worldProvider.getWorldEntity().send(blockEvent);
 
         if (!blockEvent.isConsumed()) {
             EntityRef newTrunk = entityManager.create(trunk.trunkRegionPrefab);
             entity.removeComponent(MeshComponent.class);
-            newTrunk.addComponent(new BlockRegionComponent(new BlockRegion().union(JomlUtil.from(leftBlockPos)).union(JomlUtil.from(rightBlockPos))));
-            Vector3f doorCenter = leftBlockPos.toVector3f();
-            doorCenter.add(rightBlockPos.sub(leftBlockPos).toVector3f());
-            newTrunk.addComponent(new LocationComponent(doorCenter));
+            newTrunk.addComponent(new BlockRegionComponent(BlockRegions.encompassing(leftBlockPos, rightBlockPos)));
+
+            newTrunk.addComponent(new LocationComponent(JomlUtil.from(new Vector3f(rightBlockPos))));
+
             TrunkComponent newDoorComp = newTrunk.getComponent(TrunkComponent.class);
             newTrunk.saveComponent(newDoorComp);
             newTrunk.send(new PlaySoundEvent(Assets.getSound("engine:PlaceBlock").get(), 0.5f));
