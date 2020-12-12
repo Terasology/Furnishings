@@ -140,9 +140,9 @@ public class TrunkSystem extends BaseComponentSystem {
             newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(JomlUtil.from(rightBlockPos), Side.BOTTOM,
                     facingDir.reverse());
         }
-        Map<org.terasology.math.geom.Vector3i, Block> blockMap = new HashMap<>();
-        blockMap.put(JomlUtil.from(leftBlockPos), newBottomBlock);
-        blockMap.put(JomlUtil.from(rightBlockPos), newTopBlock);
+        Map<org.joml.Vector3i, Block> blockMap = new HashMap<>();
+        blockMap.put(leftBlockPos, newBottomBlock);
+        blockMap.put(rightBlockPos, newTopBlock);
         PlaceBlocks blockEvent = new PlaceBlocks(blockMap, event.getInstigator());
         worldProvider.getWorldEntity().send(blockEvent);
 
