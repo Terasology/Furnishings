@@ -138,9 +138,9 @@ public class DoorSystem extends BaseComponentSystem {
         Block newTopBlock = door.topBlockFamily.getBlockForPlacement(new BlockPlacementData(bottomBlockPos,
                 closedSide, TOP));
 
-        Map<org.terasology.math.geom.Vector3i, Block> blockMap = new HashMap<>();
-        blockMap.put(JomlUtil.from(bottomBlockPos), newBottomBlock);
-        blockMap.put(JomlUtil.from(topBlockPos), newTopBlock);
+        Map<org.joml.Vector3i, Block> blockMap = new HashMap<>();
+        blockMap.put(bottomBlockPos, newBottomBlock);
+        blockMap.put(topBlockPos, newTopBlock);
         PlaceBlocks blockEvent = new PlaceBlocks(blockMap, event.getInstigator());
         worldProvider.getWorldEntity().send(blockEvent);
 
