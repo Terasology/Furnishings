@@ -44,7 +44,6 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockRegion;
-import org.terasology.world.block.BlockRegions;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.regions.BlockRegionComponent;
@@ -148,7 +147,7 @@ public class DoorSystem extends BaseComponentSystem {
             EntityRef newDoor = entityManager.create(door.doorRegionPrefab);
             entity.removeComponent(MeshComponent.class);
 
-            newDoor.addComponent(new BlockRegionComponent(BlockRegions.encompassing(bottomBlockPos, topBlockPos)));
+            newDoor.addComponent(new BlockRegionComponent(new BlockRegion(bottomBlockPos).union(topBlockPos)));
 
             Vector3fc doorCenter = new Vector3f(bottomBlockPos).add(0, 0.5f, 0);
             newDoor.addComponent(new LocationComponent(JomlUtil.from(doorCenter)));
