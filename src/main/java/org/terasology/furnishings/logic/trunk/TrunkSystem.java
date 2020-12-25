@@ -41,7 +41,7 @@ import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
-import org.terasology.world.block.BlockRegions;
+import org.terasology.world.block.BlockRegion;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.block.regions.BlockRegionComponent;
 
@@ -149,7 +149,7 @@ public class TrunkSystem extends BaseComponentSystem {
         if (!blockEvent.isConsumed()) {
             EntityRef newTrunk = entityManager.create(trunk.trunkRegionPrefab);
             entity.removeComponent(MeshComponent.class);
-            newTrunk.addComponent(new BlockRegionComponent(BlockRegions.encompassing(leftBlockPos, rightBlockPos)));
+            newTrunk.addComponent(new BlockRegionComponent(new BlockRegion(leftBlockPos).union(rightBlockPos)));
 
             newTrunk.addComponent(new LocationComponent(JomlUtil.from(new Vector3f(rightBlockPos))));
 
