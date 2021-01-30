@@ -137,7 +137,7 @@ public class TrunkSystem extends BaseComponentSystem {
             entity.removeComponent(MeshComponent.class);
             newTrunk.addComponent(new BlockRegionComponent(new BlockRegion(leftBlockPos).union(rightBlockPos)));
 
-            newTrunk.addComponent(new LocationComponent(JomlUtil.from(new Vector3f(rightBlockPos))));
+            newTrunk.addComponent(new LocationComponent(new Vector3f(rightBlockPos)));
 
             TrunkComponent newDoorComp = newTrunk.getComponent(TrunkComponent.class);
             newTrunk.saveComponent(newDoorComp);
