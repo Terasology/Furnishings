@@ -150,7 +150,7 @@ public class DoorSystem extends BaseComponentSystem {
             newDoor.addComponent(new BlockRegionComponent(new BlockRegion(bottomBlockPos).union(topBlockPos)));
 
             Vector3fc doorCenter = new Vector3f(bottomBlockPos).add(0, 0.5f, 0);
-            newDoor.addComponent(new LocationComponent(JomlUtil.from(doorCenter)));
+            newDoor.addComponent(new LocationComponent(doorCenter));
 
             DoorComponent newDoorComp = newDoor.getComponent(DoorComponent.class);
             newDoorComp.closedSide = closedSide;
