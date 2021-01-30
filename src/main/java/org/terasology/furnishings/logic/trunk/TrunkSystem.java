@@ -1,18 +1,5 @@
-/*
- * Copyright 2020 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2021 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.furnishings.logic.trunk;
 
@@ -43,6 +30,7 @@ import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockRegion;
 import org.terasology.world.block.entity.placement.PlaceBlocks;
+import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.regions.BlockRegionComponent;
 
 import java.util.HashMap;
@@ -128,19 +116,17 @@ public class TrunkSystem extends BaseComponentSystem {
         Block newTopBlock;
 
         if (facingDir == Side.FRONT || facingDir == Side.RIGHT) {
-            //TODO: can this be replace by `new BlockPlacementData(leftBlockPos, Side.BOTTOM, facingDir.reverse()
-            // .direction())`
-            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(JomlUtil.from(leftBlockPos), Side.BOTTOM,
-                    facingDir.reverse());
-            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(JomlUtil.from(rightBlockPos), Side.BOTTOM,
-                    facingDir.reverse());
+            newBottomBlock = trunk.rightBlockFamily.getBlockForPlacement(
+                    new BlockPlacementData(leftBlockPos, Side.BOTTOM, facingDir.reverse().toDirection().asVector3f()));
+            newTopBlock = trunk.leftBlockFamily.getBlockForPlacement(
+                    new BlockPlacementData(rightBlockPos, Side.BOTTOM, facingDir.reverse().toDirection().asVector3f()));
         } else {
-            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(JomlUtil.from(leftBlockPos), Side.BOTTOM,
-                    facingDir.reverse());
-            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(JomlUtil.from(rightBlockPos), Side.BOTTOM,
-                    facingDir.reverse());
+            newBottomBlock = trunk.leftBlockFamily.getBlockForPlacement(
+                    new BlockPlacementData(leftBlockPos, Side.BOTTOM, facingDir.reverse().toDirection().asVector3f()));
+            newTopBlock = trunk.rightBlockFamily.getBlockForPlacement(
+                    new BlockPlacementData(rightBlockPos, Side.BOTTOM, facingDir.reverse().toDirection().asVector3f()));
         }
-        Map<org.joml.Vector3i, Block> blockMap = new HashMap<>();
+        Map<Vector3i, Block> blockMap = new HashMap<>();
         blockMap.put(leftBlockPos, newBottomBlock);
         blockMap.put(rightBlockPos, newTopBlock);
         PlaceBlocks blockEvent = new PlaceBlocks(blockMap, event.getInstigator());
