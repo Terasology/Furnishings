@@ -73,8 +73,7 @@ public class TrunkSystem extends BaseComponentSystem {
         Vector3ic blockPos = targetBlockComp.getPosition();
         Vector3f offset = event.getHitPosition().sub(blockPos.x(), blockPos.y(), blockPos.z(), new Vector3f());
         Side offsetDir = Side.inDirection(offset);
-
-        Vector3i primePos = targetBlockComp.getPosition().add(offsetDir.direction(), new Vector3i());
+        Vector3i primePos = blockPos.add(offsetDir.direction(), new Vector3i());
 
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
