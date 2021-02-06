@@ -1,18 +1,5 @@
-/*
- * Copyright 2020 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2021 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.furnishings.logic.door;
 
@@ -34,7 +21,6 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.Side;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
@@ -89,14 +75,11 @@ public class DoorSystem extends BaseComponentSystem {
             return;
         }
 
-        Vector3f offset =
-                new Vector3f(event.getHitPosition())
-                        .sub(targetBlockComp.position.x, targetBlockComp.position.y, targetBlockComp.position.z);
+        Vector3ic blockPos = targetBlockComp.getPosition();
+        Vector3f offset = event.getHitPosition().sub(blockPos.x(), blockPos.y(), blockPos.z(), new Vector3f());
         Side offsetDir = Side.inDirection(offset);
 
-        Vector3i primePos =
-                JomlUtil.from(targetBlockComp.position)
-                        .add(offsetDir.direction());
+        Vector3i primePos = blockPos.add(offsetDir.direction(), new Vector3i());
 
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
