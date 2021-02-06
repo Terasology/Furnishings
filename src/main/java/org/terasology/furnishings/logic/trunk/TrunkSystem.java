@@ -5,6 +5,7 @@ package org.terasology.furnishings.logic.trunk;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.joml.Vector3ic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.audio.AudioManager;
@@ -19,7 +20,6 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.Side;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
@@ -70,14 +70,11 @@ public class TrunkSystem extends BaseComponentSystem {
             return;
         }
 
-        Vector3f offset =
-                new Vector3f(event.getHitPosition())
-                        .sub(targetBlockComp.position.x, targetBlockComp.position.y, targetBlockComp.position.z);
+        Vector3ic blockPos = targetBlockComp.getPosition();
+        Vector3f offset = event.getHitPosition().sub(blockPos.x(), blockPos.y(), blockPos.z(), new Vector3f());
         Side offsetDir = Side.inDirection(offset);
 
-        Vector3i primePos =
-                JomlUtil.from(targetBlockComp.position)
-                        .add(offsetDir.direction());
+        Vector3i primePos = targetBlockComp.getPosition().add(offsetDir.direction(), new Vector3i());
 
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
