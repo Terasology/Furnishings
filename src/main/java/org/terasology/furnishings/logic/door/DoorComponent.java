@@ -16,11 +16,11 @@
 
 package org.terasology.furnishings.logic.door;
 
-import org.terasology.audio.StaticSound;
-import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.prefab.Prefab;
-import org.terasology.math.Side;
-import org.terasology.world.block.family.BlockFamily;
+import org.terasology.engine.audio.StaticSound;
+import org.terasology.engine.entitySystem.Component;
+import org.terasology.engine.entitySystem.prefab.Prefab;
+import org.terasology.engine.math.Side;
+import org.terasology.engine.world.block.family.BlockFamily;
 
 /**
  */
