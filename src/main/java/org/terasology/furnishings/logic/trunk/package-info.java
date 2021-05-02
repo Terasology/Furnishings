@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-@API package org.terasology.furnishings.logic.trunk;
+@API
+package org.terasology.furnishings.logic.trunk;
 
-import org.terasology.module.sandbox.API;
+import org.terasology.gestalt.module.sandbox.API;
