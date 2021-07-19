@@ -76,22 +76,8 @@ public class DoorSystem extends BaseComponentSystem {
         }
 
         Vector3ic blockPos = targetBlockComp.getPosition();
-        Vector3f offsetDir = null;
-        switch (facingDir.toString()) {
-            case "BACK":
-                offsetDir = new Vector3f(0, 0, -1);
-                break;
-            case "FRONT":
-                offsetDir = new Vector3f(0, 0, 1);
-                break;
-            case "LEFT":
-                offsetDir = new Vector3f(1, 0, 0);
-                break;
-            case "RIGHT":
-                offsetDir = new Vector3f(-1, 0, 0);
-                break;
-        }
-        Vector3i primePos = blockPos.add(new Vector3i((int) offsetDir.x(), (int) offsetDir.y(), (int) offsetDir.z()), new Vector3i());
+        Side offsetDir = facingDir.reverse();
+        Vector3i primePos = blockPos.add(offsetDir.direction(), new Vector3i());
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
             event.consume();
@@ -114,7 +100,7 @@ public class DoorSystem extends BaseComponentSystem {
             event.consume();
             return;
         }
-        Side attachSide = determineAttachSide(facingDir, Side.inDirection(offsetDir), bottomBlockPos, topBlockPos);
+        Side attachSide = determineAttachSide(facingDir, offsetDir, bottomBlockPos, topBlockPos);
         if (attachSide == null) {
             event.consume();
             return;
