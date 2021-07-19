@@ -144,7 +144,7 @@ public class DoorSystem extends BaseComponentSystem {
 
             DoorComponent newDoorComp = newDoor.getComponent(DoorComponent.class);
             newDoorComp.closedSide = closedSide;
-            newDoorComp.openSide = attachSide.reverse();
+            newDoorComp.openSide = closedSide.yawClockwise(1);
             newDoorComp.isOpen = false;
             newDoor.saveComponent(newDoorComp);
             newDoor.send(new PlaySoundEvent(Assets.getSound("engine:PlaceBlock").get(), 0.5f));
