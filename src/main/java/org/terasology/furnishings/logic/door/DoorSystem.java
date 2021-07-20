@@ -76,11 +76,8 @@ public class DoorSystem extends BaseComponentSystem {
         }
 
         Vector3ic blockPos = targetBlockComp.getPosition();
-        Vector3f offset = event.getHitPosition().sub(blockPos.x(), blockPos.y(), blockPos.z(), new Vector3f());
-        Side offsetDir = Side.inDirection(offset);
-
+        Side offsetDir = facingDir.reverse();
         Vector3i primePos = blockPos.add(offsetDir.direction(), new Vector3i());
-
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
             event.consume();
@@ -103,7 +100,6 @@ public class DoorSystem extends BaseComponentSystem {
             event.consume();
             return;
         }
-
         Side attachSide = determineAttachSide(facingDir, offsetDir, bottomBlockPos, topBlockPos);
         if (attachSide == null) {
             event.consume();
@@ -111,9 +107,6 @@ public class DoorSystem extends BaseComponentSystem {
         }
 
         Side closedSide = facingDir.reverse();
-        if (closedSide == attachSide || closedSide.reverse() == attachSide) {
-            closedSide = attachSide.yawClockwise(1);
-        }
 
         Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(new BlockPlacementData(bottomBlockPos,
                 closedSide, TOP));
@@ -137,7 +130,7 @@ public class DoorSystem extends BaseComponentSystem {
 
             DoorComponent newDoorComp = newDoor.getComponent(DoorComponent.class);
             newDoorComp.closedSide = closedSide;
-            newDoorComp.openSide = attachSide.reverse();
+            newDoorComp.openSide = closedSide.yawClockwise(1);
             newDoorComp.isOpen = false;
             newDoor.saveComponent(newDoorComp);
             newDoor.send(new PlaySoundEvent(Assets.getSound("engine:PlaceBlock").get(), 0.5f));
