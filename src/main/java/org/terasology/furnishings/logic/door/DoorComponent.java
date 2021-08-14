@@ -23,7 +23,7 @@ public class DoorComponent implements Component<DoorComponent> {
     public boolean isOpen;
 
     @Override
-    public void copy(DoorComponent other) {
+    public void copyFrom(DoorComponent other) {
         this.topBlockFamily = other.topBlockFamily;
         this.bottomBlockFamily = other.bottomBlockFamily;
         this.closedSide = other.closedSide;

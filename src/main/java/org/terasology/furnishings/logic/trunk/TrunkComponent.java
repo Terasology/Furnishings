@@ -18,7 +18,7 @@ public class TrunkComponent implements Component<TrunkComponent> {
     public Prefab trunkRegionPrefab;
 
     @Override
-    public void copy(TrunkComponent other) {
+    public void copyFrom(TrunkComponent other) {
         this.leftBlockFamily = other.leftBlockFamily;
         this.rightBlockFamily = other.rightBlockFamily;
         this.openSound = other.openSound;
