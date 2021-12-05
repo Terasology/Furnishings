@@ -12,7 +12,6 @@ import org.terasology.engine.audio.AudioManager;
 import org.terasology.engine.audio.events.PlaySoundEvent;
 import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.engine.entitySystem.entity.EntityRef;
-import org.terasology.engine.entitySystem.event.ReceiveEvent;
 import org.terasology.engine.entitySystem.metadata.EntitySystemLibrary;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterMode;
@@ -32,6 +31,7 @@ import org.terasology.engine.world.block.BlockRegion;
 import org.terasology.engine.world.block.entity.placement.PlaceBlocks;
 import org.terasology.engine.world.block.family.BlockPlacementData;
 import org.terasology.engine.world.block.regions.BlockRegionComponent;
+import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
 
 import java.util.HashMap;
 import java.util.Map;
