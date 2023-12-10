@@ -8,8 +8,6 @@ import org.terasology.engine.entitySystem.prefab.Prefab;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.gestalt.entitysystem.component.Component;
 
-/**
- */
 public class TrunkComponent implements Component<TrunkComponent> {
     public BlockFamily leftBlockFamily;
     public BlockFamily rightBlockFamily;

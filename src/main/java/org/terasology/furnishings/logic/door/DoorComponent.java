@@ -9,8 +9,6 @@ import org.terasology.engine.math.Side;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.gestalt.entitysystem.component.Component;
 
-/**
- */
 public class DoorComponent implements Component<DoorComponent> {
     public BlockFamily topBlockFamily;
     public BlockFamily bottomBlockFamily;
