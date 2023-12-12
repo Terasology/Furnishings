@@ -1,4 +1,4 @@
-// Copyright 2021 The Terasology Foundation
+// Copyright 2023 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.furnishings.logic.door;
@@ -9,8 +9,6 @@ import org.terasology.engine.math.Side;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.gestalt.entitysystem.component.Component;
 
-/**
- */
 public class DoorComponent implements Component<DoorComponent> {
     public BlockFamily topBlockFamily;
     public BlockFamily bottomBlockFamily;

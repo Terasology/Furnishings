@@ -1,4 +1,4 @@
-// Copyright 2021 The Terasology Foundation
+// Copyright 2023 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.furnishings.logic.trunk;
@@ -8,8 +8,6 @@ import org.terasology.engine.entitySystem.prefab.Prefab;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.gestalt.entitysystem.component.Component;
 
-/**
- */
 public class TrunkComponent implements Component<TrunkComponent> {
     public BlockFamily leftBlockFamily;
     public BlockFamily rightBlockFamily;
