@@ -32,6 +32,7 @@ import org.terasology.engine.world.block.entity.placement.PlaceBlocks;
 import org.terasology.engine.world.block.family.BlockPlacementData;
 import org.terasology.engine.world.block.regions.BlockRegionComponent;
 import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
+import org.terasology.module.inventory.components.InventoryComponent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -132,6 +133,15 @@ public class TrunkSystem extends BaseComponentSystem {
             EntityRef newTrunk = entityManager.create(trunk.trunkRegionPrefab);
             entity.removeComponent(MeshComponent.class);
             newTrunk.addComponent(new BlockRegionComponent(new BlockRegion(leftBlockPos).union(rightBlockPos)));
+
+            // The item form can carry a starting inventory (see StartingInventorySystem); without this, placing
+            // it would silently discard that content in favor of the region prefab's empty default inventory.
+            InventoryComponent sourceInventory = entity.getComponent(InventoryComponent.class);
+            InventoryComponent targetInventory = newTrunk.getComponent(InventoryComponent.class);
+            if (sourceInventory != null && targetInventory != null) {
+                targetInventory.copyFrom(sourceInventory);
+                newTrunk.saveComponent(targetInventory);
+            }
 
             newTrunk.addComponent(new LocationComponent(new Vector3f(rightBlockPos)));
 
